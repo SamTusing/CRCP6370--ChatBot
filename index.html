@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Chatbot</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f9; }
+  .chat-container { max-width: 600px; margin: 2rem auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; height: 80vh; }
+  #chat { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+  .message { padding: 0.6rem 1rem; border-radius: 20px; max-width: 75%; }
+  .user { background: #007bff; color: #fff; align-self: flex-end; }
+  .bot { background: #e5e5ea; color: #000; align-self: flex-start; }
+  .input-container { display: flex; padding: 1rem; border-top: 1px solid #ccc; }
+  input { flex: 1; padding: 0.7rem 1rem; border-radius: 20px; border: 1px solid #ccc; margin-right: 0.5rem; }
+  button { padding: 0.7rem 1rem; border-radius: 20px; border: none; background: #007bff; color: #fff; cursor: pointer; }
+  button:hover { background: #0056b3; }
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div id="chat"></div>
+  <div class="input-container">
+    <input type="text" id="message" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+const chatDiv = document.getElementById('chat');
+const input = document.getElementById('message');
+
+async function sendMessage() {
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  addMessage(msg, 'user');
+  input.value = '';
+
+  try {
+    const res = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg })
+    });
+
+    const data = await res.json();
+    addMessage(data.reply, 'bot');
+  } catch (err) {
+    addMessage("Error contacting AI.", 'bot');
+  }
+}
+
+function addMessage(text, sender) {
+  const elem = document.createElement('div');
+  elem.className = 'message ' + sender;
+  elem.textContent = text;
+  chatDiv.appendChild(elem);
+  chatDiv.scrollTop = chatDiv.scrollHeight; // auto scroll
+}
+
+input.addEventListener("keypress", function(e) {
+  if (e.key === "Enter") sendMessage();
+});
+</script>
+
+</body>
+</html>
