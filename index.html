@@ -66,24 +66,46 @@ button {
   color: #fff;
   cursor: pointer;
 }
-
 button:hover { background: #07401b; }
 
-/* Chat bubbles */
-.message {
-  max-width: 75%;
-  padding: 0.7rem 1rem;
-  border-radius: 20px;
-  line-height: 1.4;
-  animation: fadeIn 0.2s ease-in;
-  word-wrap: break-word;
+/* Message containers and bubbles */
+.message-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.6rem;
+  width: 100%;
 }
 
-.user { background: #15683a; color: #fff; align-self: flex-end; }
+.message-container.user {
+  align-items: flex-end; /* push user bubble right */
+}
 
-/* Distinct colors for each cowboy */
-.gunslinger { background: #774638; color: #fff; align-self: flex-start; }
-.jellybean { background: #d18b47; color: #fff; align-self: flex-start; }
+.message-container.Gunslinger,
+.message-container.Jellybean {
+  align-items: flex-start; /* cowboys left */
+}
+
+.message {
+  display: inline-block;      /* bubble wraps text */
+  max-width: 70%;
+  padding: 0.8rem 1.2rem;
+  border-radius: 20px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Bubble colors */
+.message.user { background: #15683a; color: #fff; }
+.message.Gunslinger { background: #774638; color: #fff; }
+.message.Jellybean { background: #c77b28; color: #fff; }
+
+.message-name {
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(5px); }
@@ -92,33 +114,16 @@ button:hover { background: #07401b; }
 
 canvas { position: absolute; top: 0; left: 0; z-index: 5; }
 
-/* Cacti */
-.cactus {
-  position: fixed;
-  font-size: 120px;
-  opacity: 0.4;
-  animation: sway 10s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
-}
+/* Desert Elements */
+.cactus { position: fixed; font-size: 120px; opacity: 0.4; animation: sway 10s ease-in-out infinite; pointer-events: none; z-index: 0; }
 .cactus.left { bottom: 20px; left: 20px; }
 .cactus.right { bottom: 40px; right: 30px; animation-delay: 2s; }
 @keyframes sway { 0% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } 100% { transform: rotate(-5deg); } }
 
-/* Dust particles */
-.dust {
-  position: fixed;
-  width: 4px;
-  height: 4px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 50%;
-  animation: fall linear infinite;
-  pointer-events: none;
-  z-index: 0;
-}
+.dust { position: fixed; width: 4px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 50%; animation: fall linear infinite; pointer-events: none; z-index: 0; }
 @keyframes fall { to { transform: translateY(110vh); opacity: 0; } }
 
-@keyframes shake {
+@keyframes shake { 
   0% { transform: translate(0px, 0px) rotate(0deg); }
   10% { transform: translate(-5px, 2px) rotate(-1deg); }
   20% { transform: translate(4px, -3px) rotate(1deg); }
@@ -131,7 +136,6 @@ canvas { position: absolute; top: 0; left: 0; z-index: 5; }
   90% { transform: translate(-1px, 0px) rotate(0deg); }
   100% { transform: translate(0px, 0px) rotate(0deg); }
 }
-
 .shake { animation: shake 0.4s ease-in-out; }
 </style>
 </head>
@@ -150,15 +154,49 @@ canvas { position: absolute; top: 0; left: 0; z-index: 5; }
 </div>
 
 <script>
-// ---------- Chat ----------
 const chatDiv = document.getElementById('chat');
 const input = document.getElementById('message');
 const chatContainer = document.querySelector('.chat-container');
+const canvas = document.getElementById("bulletCanvas");
+const ctx = canvas.getContext("2d");
 
+// Resize canvas
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Add chat message
+function addMessage(text, sender) {
+  const container = document.createElement('div');
+  container.className = 'message-container';
+
+  if(sender === 'You') container.classList.add('user');
+  else if(sender === 'Gunslinger') container.classList.add('Gunslinger');
+  else if(sender === 'Jellybean') container.classList.add('Jellybean');
+
+  const nameElem = document.createElement('div');
+  nameElem.className = 'message-name';
+  nameElem.textContent = sender;
+
+  const msgElem = document.createElement('div');
+  msgElem.className = 'message';
+  if(sender === 'You') msgElem.classList.add('user');
+  else if(sender === 'Gunslinger') msgElem.classList.add('Gunslinger');
+  else if(sender === 'Jellybean') msgElem.classList.add('Jellybean');
+
+  msgElem.textContent = text;
+
+  container.appendChild(nameElem);
+  container.appendChild(msgElem);
+  chatDiv.appendChild(container);
+  chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+// Send message
 async function sendMessage() {
   const msg = input.value.trim();
   if (!msg) return;
-  addMessage(msg, 'user', 'You');
+  addMessage(msg, 'You');
   input.value = '';
 
   try {
@@ -168,60 +206,47 @@ async function sendMessage() {
       body: JSON.stringify({ message: msg })
     });
     const data = await res.json();
-    const className = data.displayName.toLowerCase(); // gunslinger or jellybean
-    addMessage(data.reply, className, data.displayName);
+    if (data.replies) {
+      data.replies.forEach(r => addMessage(r.text, r.name));
+    }
   } catch (err) {
-    addMessage("Error contacting AI.", 'gunslinger', "Gunslinger");
+    addMessage("Error contacting AI.", 'bot');
   }
 }
 
-function addMessage(text, senderClass, name) {
-  const elem = document.createElement('div');
-  elem.className = 'message ' + senderClass;
-  elem.innerHTML = `<strong>${name}:</strong> ${text}`;
-  chatDiv.appendChild(elem);
-  chatDiv.scrollTop = chatDiv.scrollHeight;
-}
-
-input.addEventListener("keypress", e => { if(e.key==='Enter') sendMessage(); });
-
-// ---------- Bullet & Shake ----------
-const canvas = document.getElementById("bulletCanvas");
-const ctx = canvas.getContext("2d");
-function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-canvas.addEventListener("click", e => shootBullet(e.clientX, e.clientY));
-
+// Bullet click & shake
 function shootBullet(x, y) {
   const bullet = { x, y, radius: 5, alpha: 1 };
   chatContainer.classList.add('shake');
   setTimeout(() => chatContainer.classList.remove('shake'), 400);
 
   const interval = setInterval(() => {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     bullet.radius += 2;
     bullet.alpha -= 0.05;
     ctx.fillStyle = `rgba(0,0,0,${bullet.alpha})`;
     ctx.beginPath();
     ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI*2);
     ctx.fill();
-    if(bullet.alpha<=0){ clearInterval(interval); ctx.clearRect(0,0,canvas.width,canvas.height);}
+    if (bullet.alpha <= 0) { clearInterval(interval); ctx.clearRect(0,0,canvas.width,canvas.height); }
   },16);
 }
 
-// ---------- Dust ----------
+canvas.addEventListener("click", (e) => shootBullet(e.clientX, e.clientY));
+input.addEventListener("keypress", (e) => { if(e.key === "Enter") sendMessage(); });
+
+// Dust
 for(let i=0;i<50;i++){
   const d = document.createElement("div");
   d.className = "dust";
   d.style.left = Math.random()*window.innerWidth+"px";
   d.style.top = Math.random()*window.innerHeight+"px";
-  d.style.animationDuration = 5 + Math.random()*5 + "s";
-  d.style.width = 2 + Math.random()*3 + "px";
-  d.style.height = 2 + Math.random()*3 + "px";
+  d.style.animationDuration = 5 + Math.random()*5+"s";
+  d.style.width = 2+Math.random()*3+"px";
+  d.style.height = 2+Math.random()*3+"px";
   document.body.appendChild(d);
 }
 </script>
+
 </body>
 </html>
