@@ -5,147 +5,142 @@
 <title>AI Cowboy Chatbot</title>
 <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
 <style>
-  body {
-    margin: 0;
-    font-family: 'Special Elite', monospace;
-    height: 100vh;
-    overflow: hidden;
-    background: linear-gradient(
-      to top,
-      #e6c89c 0%,      /* desert sand */
-      #e6c89c 35%,     /* foreground stays solid */
-      #f1a66a 36%,     /* horizon start */
-      #e87c5d 55%,     /* sunset orange */
-      #c65b7c 75%,     /* dusty pink */
-      #6a4c93 100%     /* purple dusk sky */
-    );
-  }
+body {
+  margin: 0;
+  font-family: 'Special Elite', monospace;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(
+    to top,
+    #e6c89c 0%,
+    #e6c89c 35%,
+    #f1a66a 36%,
+    #e87c5d 55%,
+    #c65b7c 75%,
+    #6a4c93 100%
+  );
+}
 
-  /* Chat container */
-  .chat-container {
-    position: relative;
-    z-index: 10;
-    max-width: 600px;
-    margin: 2rem auto;
-    background: rgba(243, 227, 195, 0.95);
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    display: flex;
-    flex-direction: column;
-    height: 80vh;
-  }
+/* Chat container */
+.chat-container {
+  position: relative;
+  z-index: 10;
+  max-width: 600px;
+  margin: 2rem auto;
+  background: rgba(243, 227, 195, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+}
 
-  #chat {
-    flex: 1;
-    padding: 1rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
+#chat {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
 
-  .input-container {
-    display: flex;
-    padding: 1rem;
-    border-top: 1px solid #ccc;
-  }
+.input-container {
+  display: flex;
+  padding: 1rem;
+  border-top: 1px solid #ccc;
+}
 
-  input {
-    flex: 1;
-    padding: 0.7rem 1rem;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    margin-right: 0.5rem;
-  }
+input {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  margin-right: 0.5rem;
+}
 
-  button {
-    padding: 0.7rem 1rem;
-    border-radius: 20px;
-    border: none;
-    background: #0a502a;
-    color: #fff;
-    cursor: pointer;
-  }
+button {
+  padding: 0.7rem 1rem;
+  border-radius: 20px;
+  border: none;
+  background: #0a502a;
+  color: #fff;
+  cursor: pointer;
+}
 
-  button:hover { background: #07401b; }
+button:hover { background: #07401b; }
 
-  /* Chat bubbles */
-  .message {
-    max-width: 75%;
-    padding: 0.7rem 1rem;
-    border-radius: 20px;
-    line-height: 1.4;
-    animation: fadeIn 0.2s ease-in;
-    word-wrap: break-word;
-  }
+/* Chat bubbles */
+.message {
+  max-width: 75%;
+  padding: 0.7rem 1rem;
+  border-radius: 20px;
+  line-height: 1.4;
+  animation: fadeIn 0.2s ease-in;
+  word-wrap: break-word;
+}
 
-  .user { background: #15683a; color: #fff; align-self: flex-end; }
-  .bot { background: #774638; color: #fff; align-self: flex-start; }
+.user { background: #15683a; color: #fff; align-self: flex-end; }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+/* Distinct colors for each cowboy */
+.gunslinger { background: #774638; color: #fff; align-self: flex-start; }
+.jellybean { background: #d18b47; color: #fff; align-self: flex-start; }
 
-  canvas { position: absolute; top: 0; left: 0; z-index: 5; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-  /* Cacti */
-  .cactus {
-    position: fixed;
-    font-size: 120px;
-    opacity: 0.4;
-    animation: sway 10s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .cactus.left { bottom: 20px; left: 20px; }
-  .cactus.right { bottom: 40px; right: 30px; animation-delay: 2s; }
-  @keyframes sway {
-    0% { transform: rotate(-5deg); }
-    50% { transform: rotate(5deg); }
-    100% { transform: rotate(-5deg); }
-  }
+canvas { position: absolute; top: 0; left: 0; z-index: 5; }
 
-  /* Dust particles */
-  .dust {
-    position: fixed;
-    width: 4px;
-    height: 4px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 50%;
-    animation: fall linear infinite;
-    pointer-events: none;
-    z-index: 0;
-  }
-  @keyframes fall { to { transform: translateY(110vh); opacity: 0; } }
+/* Cacti */
+.cactus {
+  position: fixed;
+  font-size: 120px;
+  opacity: 0.4;
+  animation: sway 10s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.cactus.left { bottom: 20px; left: 20px; }
+.cactus.right { bottom: 40px; right: 30px; animation-delay: 2s; }
+@keyframes sway { 0% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } 100% { transform: rotate(-5deg); } }
 
-  /* Shake animation */
-  @keyframes shake {
-    0% { transform: translate(0px, 0px) rotate(0deg); }
-    10% { transform: translate(-5px, 2px) rotate(-1deg); }
-    20% { transform: translate(4px, -3px) rotate(1deg); }
-    30% { transform: translate(-4px, 3px) rotate(-1deg); }
-    40% { transform: translate(3px, -2px) rotate(1deg); }
-    50% { transform: translate(-3px, 2px) rotate(-1deg); }
-    60% { transform: translate(2px, -1px) rotate(1deg); }
-    70% { transform: translate(-2px, 1px) rotate(-1deg); }
-    80% { transform: translate(1px, 0px) rotate(0deg); }
-    90% { transform: translate(-1px, 0px) rotate(0deg); }
-    100% { transform: translate(0px, 0px) rotate(0deg); }
-  }
-  .shake { animation: shake 0.4s ease-in-out; }
+/* Dust particles */
+.dust {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  animation: fall linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes fall { to { transform: translateY(110vh); opacity: 0; } }
+
+@keyframes shake {
+  0% { transform: translate(0px, 0px) rotate(0deg); }
+  10% { transform: translate(-5px, 2px) rotate(-1deg); }
+  20% { transform: translate(4px, -3px) rotate(1deg); }
+  30% { transform: translate(-4px, 3px) rotate(-1deg); }
+  40% { transform: translate(3px, -2px) rotate(1deg); }
+  50% { transform: translate(-3px, 2px) rotate(-1deg); }
+  60% { transform: translate(2px, -1px) rotate(1deg); }
+  70% { transform: translate(-2px, 1px) rotate(-1deg); }
+  80% { transform: translate(1px, 0px) rotate(0deg); }
+  90% { transform: translate(-1px, 0px) rotate(0deg); }
+  100% { transform: translate(0px, 0px) rotate(0deg); }
+}
+
+.shake { animation: shake 0.4s ease-in-out; }
 </style>
 </head>
 <body>
 
-<!-- Bullet canvas -->
 <canvas id="bulletCanvas"></canvas>
-
-<!-- Desert elements -->
 <div class="cactus left">🌵</div>
 <div class="cactus right">🌵</div>
 
-<!-- Chat Interface -->
 <div class="chat-container">
   <div id="chat"></div>
   <div class="input-container">
@@ -163,7 +158,7 @@ const chatContainer = document.querySelector('.chat-container');
 async function sendMessage() {
   const msg = input.value.trim();
   if (!msg) return;
-  addMessage(msg, 'user');
+  addMessage(msg, 'user', 'You');
   input.value = '';
 
   try {
@@ -173,66 +168,60 @@ async function sendMessage() {
       body: JSON.stringify({ message: msg })
     });
     const data = await res.json();
-    addMessage(data.reply, 'bot');
+    const className = data.displayName.toLowerCase(); // gunslinger or jellybean
+    addMessage(data.reply, className, data.displayName);
   } catch (err) {
-    addMessage("Error contacting AI.", 'bot');
+    addMessage("Error contacting AI.", 'gunslinger', "Gunslinger");
   }
 }
 
-function addMessage(text, sender) {
+function addMessage(text, senderClass, name) {
   const elem = document.createElement('div');
-  elem.className = 'message ' + sender;
-  elem.textContent = text;
+  elem.className = 'message ' + senderClass;
+  elem.innerHTML = `<strong>${name}:</strong> ${text}`;
   chatDiv.appendChild(elem);
   chatDiv.scrollTop = chatDiv.scrollHeight;
 }
 
-input.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+input.addEventListener("keypress", e => { if(e.key==='Enter') sendMessage(); });
 
-// ---------- Bullet Click ----------
+// ---------- Bullet & Shake ----------
 const canvas = document.getElementById("bulletCanvas");
 const ctx = canvas.getContext("2d");
-
 function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-canvas.addEventListener("click", (e) => { shootBullet(e.clientX, e.clientY); });
+canvas.addEventListener("click", e => shootBullet(e.clientX, e.clientY));
 
 function shootBullet(x, y) {
   const bullet = { x, y, radius: 5, alpha: 1 };
-
-  // Shake chat container
   chatContainer.classList.add('shake');
   setTimeout(() => chatContainer.classList.remove('shake'), 400);
 
   const interval = setInterval(() => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
     bullet.radius += 2;
     bullet.alpha -= 0.05;
     ctx.fillStyle = `rgba(0,0,0,${bullet.alpha})`;
     ctx.beginPath();
     ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI*2);
     ctx.fill();
-    if (bullet.alpha <= 0) {
-      clearInterval(interval);
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-    }
-  }, 16);
+    if(bullet.alpha<=0){ clearInterval(interval); ctx.clearRect(0,0,canvas.width,canvas.height);}
+  },16);
 }
 
-// ---------- Generate dust ----------
+// ---------- Dust ----------
 for(let i=0;i<50;i++){
   const d = document.createElement("div");
   d.className = "dust";
   d.style.left = Math.random()*window.innerWidth+"px";
   d.style.top = Math.random()*window.innerHeight+"px";
-  d.style.animationDuration = 5 + Math.random()*5+"s";
-  d.style.width = 2+Math.random()*3+"px";
-  d.style.height = 2+Math.random()*3+"px";
+  d.style.animationDuration = 5 + Math.random()*5 + "s";
+  d.style.width = 2 + Math.random()*3 + "px";
+  d.style.height = 2 + Math.random()*3 + "px";
   document.body.appendChild(d);
 }
 </script>
-
 </body>
 </html>
